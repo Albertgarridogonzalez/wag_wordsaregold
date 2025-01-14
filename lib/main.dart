@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:numberpicker/numberpicker.dart';
 
 void main() {
   runApp(MyApp());
@@ -107,7 +108,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 20),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => HomeScreen(_currentColor)),
+                      );
+                    },
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.black,
@@ -169,10 +175,10 @@ class _HomeScreenState extends State<HomeScreen> {
       'author': 'John Doe',
       'content': 'Exploring the wonders of AI! #ArtificialIntelligence #Tech',
       'seed': 50.80,
-      'peak': 85.99,
+      'peak': 85.50,
       'image': 'assets/imagen1.png',
       'replies': [
-        {'author': 'Alice', 'content': 'Absolutely fascinating! The future is bright!', 'price': 85.99},
+        {'author': 'Alice', 'content': 'Absolutely fascinating! The future is bright!', 'price': 85.50},
         {'author': 'Bob', 'content': 'I still have my doubts about AI, but it’s promising.', 'price': 80.50},
         {'author': 'Charlie', 'content': 'Can AI really surpass human creativity?', 'price': 56.00}
       ]
@@ -183,7 +189,11 @@ class _HomeScreenState extends State<HomeScreen> {
       'seed': 0.75,
       'peak': 1.20,
       'image': 'assets/imagen2.png',
-      'replies': []
+            'replies': [
+        {'author': 'Alice', 'content': 'Absolutely fascinating! The future is bright!', 'price': 1.20},
+        {'author': 'Bob', 'content': 'I still have my doubts about AI, but it’s promising.', 'price': 0.80},
+        {'author': 'Charlie', 'content': 'Can AI really surpass human creativity?', 'price': 0.75}
+      ]
     },
     {
       'author': 'Mark Zuckerberg',
@@ -191,7 +201,11 @@ class _HomeScreenState extends State<HomeScreen> {
       'seed': 1.00,
       'peak': 1.50,
       'image': 'assets/imagen3.png',
-      'replies': []
+            'replies': [
+        {'author': 'Alice', 'content': 'Absolutely fascinating! The future is bright!', 'price': 1.50},
+        {'author': 'Bob', 'content': 'I still have my doubts about AI, but it’s promising.', 'price': 1.40},
+        {'author': 'Charlie', 'content': 'Can AI really surpass human creativity?', 'price': 1.00}
+      ]
     },
   ];
 
@@ -201,41 +215,107 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _showReplyPopup(BuildContext context, double replyPrice) {
+  void _showReplyPopup(BuildContext context, Map<String, dynamic> post) {
+    int minUnit = post['peak'].toInt();
+    int minDecimal = ((post['peak'] - post['peak'].toInt()) * 100).toInt()+2;
+    int selectedUnit = minUnit;
+    int selectedDecimal = minDecimal;
+    TextEditingController replyController = TextEditingController();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Write a Reply'),
-          content: Container(
-            height: 150,
-            child: Column(
-              children: [
-                TextField(
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    hintText: 'Write your reply...',
-                    border: OutlineInputBorder(),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Write a Reply'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: replyController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Write your reply...',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          Text('Unit'),
+                          NumberPicker(
+                            minValue: minUnit,
+                            maxValue: 999,
+                            value: selectedUnit,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedUnit = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Text('Decimal'),
+                          NumberPicker(
+                            minValue: selectedUnit == minUnit ? minDecimal : 0,
+                            maxValue: 99,
+                            value: selectedDecimal,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedDecimal = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (replyController.text.isNotEmpty) {
+                      double finalPrice = selectedUnit + (selectedDecimal / 100);
+                      setState(() {
+                        post['replies'].insert(0, {
+                          'author': 'You',
+                          'content': replyController.text,
+                          'price': finalPrice,
+                        });
+                        post['peak'] = finalPrice;
+                      });
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PostDetailScreen(
+                            post: post,
+                            themeColor: widget.themeColor,
+                            onReply: () => _showReplyPopup(context, post),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: widget.themeColor),
+                  child: Text('Reply for \$${(selectedUnit + (selectedDecimal / 100)).toStringAsFixed(2)}'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: widget.themeColor),
-              child: Text('Reply for \$${replyPrice.toStringAsFixed(2)}'),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -251,12 +331,17 @@ class _HomeScreenState extends State<HomeScreen> {
         itemCount: posts.length,
         itemBuilder: (context, index) {
           final post = posts[index];
-          final double replyPrice = post['peak'] + 0.01;
           return GestureDetector(
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PostDetailScreen(post: post, themeColor: widget.themeColor)),
+                MaterialPageRoute(
+                  builder: (context) => PostDetailScreen(
+                    post: post,
+                    themeColor: widget.themeColor,
+                    onReply: () => _showReplyPopup(context, post),
+                  ),
+                ),
               );
             },
             child: Card(
@@ -304,12 +389,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(height: 10),
                     ElevatedButton(
                       onPressed: () {
-                        _showReplyPopup(context, replyPrice);
+                        _showReplyPopup(context, post);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.themeColor,
                       ),
-                      child: Text('Reply for \$${replyPrice.toStringAsFixed(2)}'),
+                      child: Text('Reply for \$${(post['peak'] + 0.01).toStringAsFixed(2)}'),
                     ),
                   ],
                 ),
@@ -353,8 +438,9 @@ class _HomeScreenState extends State<HomeScreen> {
 class PostDetailScreen extends StatelessWidget {
   final Map<String, dynamic> post;
   final Color themeColor;
+  final VoidCallback onReply;
 
-  const PostDetailScreen({required this.post, required this.themeColor});
+  const PostDetailScreen({required this.post, required this.themeColor, required this.onReply});
 
   @override
   Widget build(BuildContext context) {
@@ -363,7 +449,17 @@ class PostDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(post['author']),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(post['author']),
+            ElevatedButton(
+              onPressed: onReply,
+              style: ElevatedButton.styleFrom(backgroundColor: themeColor),
+              child: Text('Reply for \$${(post['peak'] + 0.01).toStringAsFixed(2)}'),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
