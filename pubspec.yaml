@@ -10,6 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   numberpicker: ^2.1.2
+  syncfusion_flutter_charts: ^28.1.39
 
 dev_dependencies:
   flutter_test:
@@ -22,6 +23,11 @@ flutter:
     - assets/imagen1.png
     - assets/imagen2.png
     - assets/imagen3.png
+    - assets/imagen4.png
+    - assets/imagen5.png
+    - assets/imagen6.png
+    - assets/imagen7.png
+    - assets/imagen8.png
     - assets/logo.png
     - assets/logo2.png
     - assets/google_logo.png
