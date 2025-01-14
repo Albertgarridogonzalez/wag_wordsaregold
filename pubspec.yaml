@@ -1,0 +1,27 @@
+name: wag_wordsaregold
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/imagen1.png
+    - assets/imagen2.png
+    - assets/imagen3.png
+    - assets/logo.png
+    - assets/logo2.png
+    - assets/google_logo.png
+
